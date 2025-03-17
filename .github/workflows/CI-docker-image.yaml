@@ -1,12 +1,13 @@
 name: Docker Image CI
 
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "CI-CD" ]
+    paths:
+      - 'src/**'
   pull_request:
-    branches: [ "CI-CD" ]
-
+    paths:
+      - 'src/**'
+      
 jobs:
   build_and_test:
     runs-on: self-hosted
