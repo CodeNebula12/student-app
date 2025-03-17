@@ -1,16 +1,15 @@
 name: Docker Image CI
 
 on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    paths:
-      - 'src/**'
+    branches: [ "CI-CD" ]
   pull_request:
-    paths:
-      - 'src/**'
+    branches: [ "CI-CD" ]
 
 jobs:
   build_and_test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -26,59 +25,3 @@ jobs:
 
       - name: Run Tests
         run: make test
-
-  set-commit:
-    runs-on: ubuntu-latest
-    outputs:
-      commit: ${{ steps.get_commit.outputs.commit }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Get Short Commit Hash
-        id: get_commit
-        run: echo "::set-output name=commit::$(git rev-parse --short HEAD)"
-
-  build:
-    name: Docker Build and Push
-    needs: [build_and_test, set-commit]
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: student-app
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.set-commit.outputs.commit }}
-
-  update-values:
-    name: Update values.yaml with latest image
-    needs: [build, set-commit]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Update values.yaml
-        run: |
-          sed -i "s|tag:.*|tag: ${{ needs.set-commit.outputs.commit }}|" helm-chart/student-app/values.yaml
-
-      - name: Commit and Push Changes
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add helm-chart/student-app/values.yaml
-          git commit -m 'Update values.yaml with latest image tag'
-          git push
