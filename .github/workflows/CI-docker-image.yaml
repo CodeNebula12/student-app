@@ -10,7 +10,7 @@ on:
       
 jobs:
   build_and_test:
-    runs-on: [self-hosted, Linux]
+    runs-on: example-runner-deployment-r4cql-r64m8
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
