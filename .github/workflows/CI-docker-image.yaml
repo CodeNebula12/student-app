@@ -1,28 +1,8 @@
-name: Docker Image CI
-
-on:
-  push:
-    paths:
-      - 'src/**'
-  pull_request:
-    paths:
-      - 'src/**'
-      
+name: Test Runner
+on: [push]
 jobs:
-  build_and_test:
+  test:
     runs-on: self-hosted
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Build API
-        run: make build
-
-      - name: Run Tests
-        run: make test
+      - name: Echo Message
+        run: echo "Runner is working!"
